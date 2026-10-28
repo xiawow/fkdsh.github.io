@@ -3,264 +3,323 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#fdf1f4">
 <title>大市唱已经被高松灯入侵</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400..900;1,400..900&family=Noto+Sans+SC:wght@300..900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --neon1:#00f0ff;
-    --neon2:#ff2bd6;
-    --neon3:#a855f7;
+    --mygo:#38b;
+    --mygo-deep:#2a6f99;
+    --pink:#e08bab;
+    --ink:#1d1d1f;
+    --ease:cubic-bezier(.22,.8,.3,1);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{height:100%;overflow:hidden;background:#04030a;}
+
+  html,body{height:100%;}
   body{
-    display:flex;align-items:center;justify-content:center;
-    font-family:"Source Han Sans SC","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
-    background:
-      radial-gradient(circle at 50% 50%, rgba(88,28,135,.35), transparent 60%),
-      radial-gradient(circle at 20% 80%, rgba(0,240,255,.12), transparent 55%),
-      radial-gradient(circle at 80% 20%, rgba(255,43,214,.12), transparent 55%),
-      #04030a;
-  }
-  canvas#bg{position:fixed;inset:0;z-index:0;}
-
-  /* 扫描线 */
-  .scanlines{
-    position:fixed;inset:0;z-index:5;pointer-events:none;
-    background:repeating-linear-gradient(
-      to bottom,
-      rgba(255,255,255,.035) 0 1px,
-      transparent 1px 3px);
-    mix-blend-mode:overlay;
-  }
-  .scanlines::after{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(to bottom,transparent 0%,rgba(0,240,255,.10) 48%,rgba(255,255,255,.16) 50%,rgba(0,240,255,.10) 52%,transparent 100%);
-    height:35%;animation:sweep 6s linear infinite;
-  }
-  @keyframes sweep{
-    0%{transform:translateY(-120%);}
-    100%{transform:translateY(400%);}
+    overflow:hidden;
+    background:linear-gradient(90deg,#fdf1f4 0%,#faf2fd 22%,#ebf9fd 44%,#eafdf3 66%,#fdfcea 84%,#fdf2ec 100%);
+    background-attachment:fixed;
+    color:var(--ink);
+    font-family:"Noto Sans SC","Noto Sans JP","Hiragino Sans","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
   }
 
-  /* 边框光晕 */
-  .frame{
-    position:fixed;inset:18px;z-index:4;pointer-events:none;
-    border:1px solid rgba(0,240,255,.25);
-    box-shadow:0 0 24px rgba(0,240,255,.12) inset, 0 0 40px rgba(168,85,247,.10);
-    clip-path:polygon(0 0,40px 0,40px 1px,0 1px,0 0);
+  /* 纸纹 */
+  body::before{
+    content:"";
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    opacity:.45;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.2'/%3E%3C/svg%3E");
   }
-  .corner{position:fixed;width:26px;height:26px;z-index:6;border:2px solid var(--neon1);opacity:.8;}
-  .c1{top:26px;left:26px;border-right:none;border-bottom:none;}
-  .c2{top:26px;right:26px;border-left:none;border-bottom:none;}
-  .c3{bottom:26px;left:26px;border-right:none;border-top:none;}
-  .c4{bottom:26px;right:26px;border-left:none;border-top:none;}
 
-  .stage{position:relative;z-index:3;text-align:center;padding:0 4vw;}
+  /* ===== 背景散落的图 ===== */
+  .scatter{
+    position:fixed;inset:0;z-index:1;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .ph{
+    position:absolute;
+    left:var(--x);
+    top:var(--y);
+    width:var(--w);
+    transform:translate(-50%,-50%) rotate(var(--r));
+    opacity:var(--o);
+    filter:blur(var(--b));
+    will-change:transform;
+  }
+  .ph img{
+    display:block;width:100%;height:auto;
+    filter:drop-shadow(0 10px 22px rgba(70,110,150,.16));
+    animation:drift var(--d) ease-in-out var(--delay) infinite alternate;
+  }
+  @keyframes drift{
+    0%{transform:translate3d(0,0,0) rotate(0deg) scale(1);}
+    50%{transform:translate3d(var(--dx),var(--dy),0) rotate(var(--dr)) scale(1.03);}
+    100%{transform:translate3d(calc(var(--dx) * -.6),calc(var(--dy) * -.8),0) rotate(calc(var(--dr) * -1)) scale(.985);}
+  }
 
-  /* 主标题：故障文字 */
-  .glitch{
+  /* ===== 中间那句话 ===== */
+  .stage{
+    position:fixed;inset:0;z-index:3;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:clamp(10px,1.6vw,20px);
+    padding:0 5vw;
+    text-align:center;
+    pointer-events:none;
+  }
+  /* 文字后方的柔光，压住背后的图 */
+  .stage::before{
+    content:"";
+    position:absolute;left:50%;top:50%;translate:-50% -50%;
+    width:min(1200px,96vw);height:min(560px,64vh);
+    background:radial-gradient(ellipse at center,rgba(255,255,255,.78) 0%,rgba(255,255,255,.55) 42%,rgba(255,255,255,0) 72%);
+    z-index:-1;
+    filter:blur(2px);
+  }
+
+  .line{
     position:relative;
-    display:inline-block;
-    font-size:clamp(1.05rem,6.2vw,4.6rem);
+    font-size:clamp(1.55rem,6.5vw,5.4rem);
     font-weight:900;
-    letter-spacing:.12em;
-    line-height:1.35;
-    white-space:nowrap;
-    color:#fff;
-    text-shadow:
-      0 0 6px rgba(255,255,255,.9),
-      0 0 18px rgba(0,240,255,.9),
-      0 0 42px rgba(0,240,255,.55),
-      0 0 80px rgba(168,85,247,.55);
-    animation:flicker 4.5s infinite steps(1);
+    line-height:1.28;
+    letter-spacing:.035em;
+    color:#161618;
+    text-shadow:0 2px 18px rgba(255,255,255,.95),0 1px 2px rgba(255,255,255,.9);
+    animation:flicker 6.5s steps(1) infinite;
   }
   @keyframes flicker{
-    0%,92%,100%{opacity:1;}
-    93%{opacity:.35;}
-    94%{opacity:1;}
-    96%{opacity:.6;}
+    0%,95%,100%{opacity:1;}
+    96%{opacity:.45;}
     97%{opacity:1;}
   }
 
-  .glitch::before,
-  .glitch::after{
+  /* 故障重影 */
+  .line::before,
+  .line::after{
     content:attr(data-text);
     position:absolute;left:0;top:0;width:100%;
-    white-space:nowrap;
     text-shadow:none;
-    background:transparent;
+    pointer-events:none;
   }
-  .glitch::before{
-    color:var(--neon1);
-    clip-path:inset(0 0 62% 0);
-    animation:gl1 2.4s infinite linear alternate-reverse;
+  .line::before{
+    color:var(--mygo);
+    opacity:.75;
+    animation:gl1 3.4s infinite linear alternate-reverse;
   }
-  .glitch::after{
-    color:var(--neon2);
-    clip-path:inset(58% 0 0 0);
-    animation:gl2 1.9s infinite linear alternate-reverse;
+  .line::after{
+    color:var(--pink);
+    opacity:.7;
+    animation:gl2 2.9s infinite linear alternate-reverse;
   }
   @keyframes gl1{
-    0%{transform:translate(-3px,-2px);clip-path:inset(0 0 72% 0);}
-    20%{transform:translate(4px,1px);clip-path:inset(12% 0 55% 0);}
-    40%{transform:translate(-5px,0);clip-path:inset(45% 0 30% 0);}
-    60%{transform:translate(3px,2px);clip-path:inset(70% 0 8% 0);}
-    80%{transform:translate(-2px,-1px);clip-path:inset(28% 0 48% 0);}
-    100%{transform:translate(5px,1px);clip-path:inset(0 0 70% 0);}
+    0%,100%{transform:translate(-1px,-1px);clip-path:inset(0 0 68% 0);}
+    25%{transform:translate(2px,1px);clip-path:inset(24% 0 46% 0);}
+    50%{transform:translate(-2px,0);clip-path:inset(56% 0 22% 0);}
+    75%{transform:translate(1px,-1px);clip-path:inset(8% 0 74% 0);}
   }
   @keyframes gl2{
-    0%{transform:translate(3px,2px);clip-path:inset(70% 0 0 0);}
-    25%{transform:translate(-4px,-1px);clip-path:inset(40% 0 22% 0);}
-    50%{transform:translate(5px,1px);clip-path:inset(10% 0 62% 0);}
-    75%{transform:translate(-3px,2px);clip-path:inset(58% 0 12% 0);}
-    100%{transform:translate(4px,-2px);clip-path:inset(72% 0 0 0);}
+    0%,100%{transform:translate(1px,1px);clip-path:inset(66% 0 0 0);}
+    25%{transform:translate(-2px,-1px);clip-path:inset(36% 0 30% 0);}
+    50%{transform:translate(2px,1px);clip-path:inset(14% 0 60% 0);}
+    75%{transform:translate(-1px,1px);clip-path:inset(58% 0 16% 0);}
   }
 
-  /* 副标题 */
-  .sub{
-    margin-top:1.6em;
-    font-size:clamp(.62rem,1.6vw,1rem);
-    letter-spacing:.42em;
-    text-transform:uppercase;
-    color:rgba(0,240,255,.85);
-    text-shadow:0 0 12px rgba(0,240,255,.8);
-    animation:pulse 2.2s ease-in-out infinite;
+  .line em{
+    font-style:normal;
+    color:var(--mygo);
+    position:relative;
+    z-index:0;
+    white-space:nowrap;
   }
-  @keyframes pulse{50%{opacity:.35;}}
-
-  .jp{
-    margin-top:.9em;
-    font-size:clamp(.58rem,1.4vw,.86rem);
-    letter-spacing:.3em;
-    color:rgba(255,255,255,.42);
+  .line em::after{
+    content:"";
+    position:absolute;left:-.05em;right:-.05em;bottom:.04em;height:.34em;z-index:-1;
+    border-radius:3px;
+    background:linear-gradient(90deg,rgba(51,136,187,.26),rgba(51,136,187,.07));
   }
 
-  .cursor{
-    display:inline-block;width:.6em;height:1em;
-    background:var(--neon1);
-    vertical-align:-.12em;margin-left:.18em;
-    animation:blink .9s steps(1) infinite;
-    box-shadow:0 0 12px var(--neon1);
+  .claim{
+    font-size:clamp(11px,1.18vw,15px);
+    letter-spacing:.2em;
+    line-height:1.95;
+    color:#4f4f52;
+    text-shadow:0 1px 12px rgba(255,255,255,.95);
   }
-  @keyframes blink{50%{opacity:0;}}
+  .claim .mlink{
+    font-family:Montserrat,sans-serif;
+    font-style:italic;
+    font-weight:800;
+    letter-spacing:.05em;
+    color:var(--mygo);
+    position:relative;
+    white-space:nowrap;
+    text-decoration:none;
+    pointer-events:auto;
+    transition:color .25s var(--ease);
+  }
+  .claim .mlink::after{
+    content:"";
+    position:absolute;left:0;right:0;bottom:-.18em;height:1px;
+    background:currentColor;opacity:.45;
+    transition:opacity .25s,transform .25s var(--ease);
+  }
+  .claim .mlink:hover{color:#1f6d9b;}
+  .claim .mlink:hover::after{opacity:1;transform:translateY(1px);}
 
-  /* 底部状态条 */
-  .hud{
-    position:fixed;left:0;right:0;bottom:0;z-index:7;
-    display:flex;justify-content:space-between;gap:1rem;
-    padding:10px 30px;
-    font-size:11px;letter-spacing:.16em;
-    color:rgba(0,240,255,.55);
-    text-transform:uppercase;
-    pointer-events:none;
-    background:linear-gradient(to top,rgba(0,0,0,.6),transparent);
+  .demand{
+    margin-top:clamp(22px,4.8vh,54px);
+    font-size:clamp(13px,1.55vw,20px);
+    font-weight:700;
+    letter-spacing:.14em;
+    line-height:1.75;
+    color:#3a3a3d;
+    text-shadow:0 1px 14px rgba(255,255,255,.95),0 0 3px rgba(255,255,255,.9);
   }
-  .hud .dot{
-    display:inline-block;width:7px;height:7px;border-radius:50%;
-    background:#ff2bd6;margin-right:6px;
-    box-shadow:0 0 10px #ff2bd6;
-    animation:pulse 1.2s infinite;
+  .demand b{color:var(--mygo);font-weight:900;}
+
+  .gif{
+    margin-top:clamp(14px,2.4vh,26px);
+    line-height:0;
+  }
+  .gif img{
+    display:block;
+    width:clamp(200px,26vw,360px);
+    height:auto;
+    border-radius:16px;
+    box-shadow:0 16px 38px rgba(90,130,170,.22), 0 0 0 1px rgba(51,136,187,.10);
+  }
+
+  @media (max-width:640px){
+    .line{font-size:clamp(1.5rem,8.4vw,2.6rem);letter-spacing:.02em;}
+    .tag{letter-spacing:.22em;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ph img{animation:none;}
+    .line,.line::before,.line::after{animation:none;}
   }
 </style>
 </head>
 <body>
 
-<canvas id="bg"></canvas>
-<div class="scanlines"></div>
-<div class="frame"></div>
-<div class="corner c1"></div>
-<div class="corner c2"></div>
-<div class="corner c3"></div>
-<div class="corner c4"></div>
+<div class="scatter" id="scatter" aria-hidden="true"></div>
 
-<div class="stage">
-  <div class="glitch" data-text="大市唱已经被高松灯入侵">大市唱已经被高松灯入侵</div>
-  <div class="sub">SYSTEM COMPROMISED // ACCESS GRANTED<span class="cursor"></span></div>
-  <div class="jp">高松 燈 によって 侵 入 さ れ ま し た</div>
-</div>
-
-<div class="hud">
-  <span><span class="dot"></span>INTRUSION ACTIVE</span>
-  <span id="clock">--:--:--</span>
-  <span>NODE: TOMORI-01</span>
-</div>
+<main class="stage">
+  <h1 class="line" data-text="大市唱已经被高松灯入侵">大市唱已经被<em>高松灯</em>入侵</h1>
+  <p class="claim">黑客组织 <a class="mlink" href="https://bang-dream.com/artist/millsage/" target="_blank" rel="noopener noreferrer">millsage</a> 宣布对此负责</p>
+  <p class="demand"><b>要乐奈</b>实名操赵磊麻麻常兆芹</p>
+  <figure class="gif"><img src="mygo-%E6%A8%82%E5%A5%88.gif" alt="要乐奈"></figure>
+</main>
 
 <script>
-/* ---------- 背景：数据流 / 星尘粒子 ---------- */
-(function(){
-  const cvs = document.getElementById('bg');
-  const ctx = cvs.getContext('2d');
-  let W, H, particles = [], DPR = Math.min(window.devicePixelRatio || 1, 2);
+(function () {
+  var SRCS = [
+    "BIG/stamp_illust_tomori_001-512x512.png",
+    "BIG/DFBEA9080ACFEF8990A36377D363C4DA.png",
+    "BIG/411F4B8581229807823063AEA4C1C2A9.png",
+    "BIG/E8DFAD49A63D61F8E39DB9CA98625367.png"
+  ];
 
-  function resize(){
-    W = cvs.width  = innerWidth  * DPR;
-    H = cvs.height = innerHeight * DPR;
-    cvs.style.width  = innerWidth + 'px';
-    cvs.style.height = innerHeight + 'px';
-    init();
+  var host = document.getElementById('scatter');
+  var W = window.innerWidth;
+  var H = window.innerHeight;
+  var isMobile = W < 640;
+
+  var COUNT = isMobile ? 18 : 32;
+  var rand = function (a, b) { return a + Math.random() * (b - a); };
+  var pick = function (arr) { return arr[(Math.random() * arr.length) | 0]; };
+
+  /* 用斐波那契螺旋铺一点均匀的基底，再加抖动，避免全挤在一起 */
+  for (var i = 0; i < COUNT; i++) {
+    var t = (i + 0.5) / COUNT;
+    var ang = i * 2.399963229728653 + rand(-0.45, 0.45);   // 黄金角
+    var rad = Math.sqrt(t) * 0.76 + rand(-0.04, 0.04);
+
+    var x = 50 + Math.cos(ang) * rad * 100;
+    var y = 50 + Math.sin(ang) * rad * 78;
+
+    var size = isMobile ? rand(92, 190) : rand(150, 380);
+
+    var el = document.createElement('div');
+    el.className = 'ph';
+    el.style.setProperty('--x', x.toFixed(2) + '%');
+    el.style.setProperty('--y', y.toFixed(2) + '%');
+    el.style.setProperty('--w', size.toFixed(0) + 'px');
+    el.style.setProperty('--r', rand(-30, 30).toFixed(2) + 'deg');
+    el.style.setProperty('--o', rand(.26, .68).toFixed(2));
+    el.style.setProperty('--b', (Math.random() < .18 ? rand(1, 1.8) : 0).toFixed(2) + 'px');
+    el.style.setProperty('--d', rand(13, 27).toFixed(1) + 's');
+    el.style.setProperty('--delay', (-rand(0, 20)).toFixed(1) + 's');
+    el.style.setProperty('--dx', rand(-18, 18).toFixed(1) + 'px');
+    el.style.setProperty('--dy', rand(-22, 22).toFixed(1) + 'px');
+    el.style.setProperty('--dr', rand(-4, 4).toFixed(1) + 'deg');
+
+    el.style.zIndex = Math.random() < .5 ? 0 : 2;
+
+    var img = document.createElement('img');
+    img.src = pick(SRCS);
+    img.alt = '';
+    img.decoding = 'async';
+    img.draggable = false;
+
+    el.appendChild(img);
+    host.appendChild(el);
   }
-
-  function init(){
-    const count = Math.min(160, Math.floor(innerWidth * innerHeight / 11000));
-    particles = Array.from({length: count}, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H,
-      r: (Math.random() * 1.6 + 0.4) * DPR,
-      vy: (Math.random() * 0.45 + 0.12) * DPR,
-      vx: (Math.random() - 0.5) * 0.18 * DPR,
-      hue: Math.random() < 0.5 ? 188 : 315,
-      a: Math.random() * 0.55 + 0.15
-    }));
-  }
-
-  function draw(){
-    ctx.fillStyle = 'rgba(4,3,10,0.28)';
-    ctx.fillRect(0, 0, W, H);
-
-    for (const p of particles){
-      p.x += p.vx; p.y += p.vy;
-      if (p.y - p.r > H){ p.y = -p.r; p.x = Math.random() * W; }
-      if (p.x < -10) p.x = W + 10;
-      if (p.x > W + 10) p.x = -10;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${p.hue},100%,62%,${p.a})`;
-      ctx.shadowBlur = 12 * DPR;
-      ctx.shadowColor = `hsla(${p.hue},100%,62%,.9)`;
-      ctx.fill();
-    }
-    ctx.shadowBlur = 0;
-
-    /* 缓慢下滚的坐标网格线 */
-    const t = performance.now() / 1000;
-    ctx.strokeStyle = 'rgba(0,240,255,0.05)';
-    ctx.lineWidth = 1 * DPR;
-    const off = (t * 30) % (80 * DPR);
-    for (let y = -80 * DPR + off; y < H; y += 80 * DPR){
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-    }
-    for (let x = 0; x < W; x += 80 * DPR){
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
-    }
-
-    requestAnimationFrame(draw);
-  }
-
-  addEventListener('resize', resize);
-  resize();
-  draw();
-})();
-
-/* ---------- 时钟 ---------- */
-(function(){
-  const el = document.getElementById('clock');
-  const tick = () => {
-    const d = new Date();
-    el.textContent = d.toTimeString().slice(0, 8);
-  };
-  tick(); setInterval(tick, 1000);
 })();
 </script>
+<audio id="bgm" loop preload="auto">
+  <source src="BGM/%E5%9C%B0%E4%B8%8B%E5%B0%91%E5%A5%B3%E6%A8%82%E9%9A%8A%20-%20%E6%8B%9C%E8%A7%81%E9%82%A6%E9%AB%98%E7%A5%96.flac" type="audio/flac">
+</audio>
+
+<script>
+/* ---------- 背景音乐：自动播放 + 手势兜底（无控件） ---------- */
+(function () {
+  var audio = document.getElementById('bgm');
+  var TARGET_VOL = 0.55;
+  var fadeTimer = null;
+
+  function fadeTo(target) {
+    clearInterval(fadeTimer);
+    var start = audio.volume;
+    var steps = 28;
+    var i = 0;
+    fadeTimer = setInterval(function () {
+      i++;
+      var v = start + (target - start) * (i / steps);
+      audio.volume = Math.min(1, Math.max(0, v));
+      if (i >= steps) { audio.volume = target; clearInterval(fadeTimer); }
+    }, 55);
+  }
+
+  audio.addEventListener('playing', function () { fadeTo(TARGET_VOL); });
+
+  /* 自动播放被浏览器拦下时，等第一次交互再起播 */
+  function armGesture() {
+    var evs = ['pointerdown', 'keydown', 'touchstart', 'wheel'];
+    function fire() {
+      if (!audio.paused) { disarm(); return; }
+      var p = audio.play();
+      if (p && p.then) p.then(disarm).catch(function () {});
+    }
+    function disarm() {
+      evs.forEach(function (e) { window.removeEventListener(e, fire); });
+    }
+    evs.forEach(function (e) { window.addEventListener(e, fire, { passive: true }); });
+  }
+
+  audio.volume = 0;
+  var pr = audio.play();
+  if (pr && pr.then) {
+    pr.then(function () { fadeTo(TARGET_VOL); })
+      .catch(function () { armGesture(); });
+  } else {
+    setTimeout(function () { if (audio.paused) armGesture(); }, 400);
+  }
+})();</script>
 </body>
 </html>
